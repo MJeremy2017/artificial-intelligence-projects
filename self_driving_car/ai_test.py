@@ -59,6 +59,25 @@ class Dqn(object):
     def select_action(self,  state):
         # softmax([1, 2, 3]) => (0.11, 0.15, 0.74) | softmax([1, 2, 3]*3) => (0.0, 0.1, 0.9)
         probs = F.softmax(self.model(Variable(state, volatile=True)) * 100)  # Temperature = 100
+        # randomly select an action
         action = probs.multinomial()
         return action.data([0, 0])
+
+    def learn(self, batch_state, batch_action, batch_reward, batch_next_state):
+        # https://stackoverflow.com/questions/50999977/what-does-the-gather-function-do-in-pytorch-in-layman-terms
+        # only pickup action that is acted
+        # 5 x 100 => model => 3 x 100 => gather => 100 x 1 => squeeze => 100,
+        outputs = self.model(batch_state).gather(1, batch_action.unsqueeze(1)).squeeze(1)  # Q(s, a)
+        next_outputs = self.model(batch_next_state).detach().max(1)[0]  # max[Q(s', a')]
+        target = self.gamma*next_outputs + batch_reward
+        loss = F.smooth_l1_loss(outputs, target)
+        # initialize optimizer
+        self.optimizer.zero_grad()
+        loss.backward(retain_variables=True)
+        # update weights
+        self.optimizer.step()
+
+
+
+
 
