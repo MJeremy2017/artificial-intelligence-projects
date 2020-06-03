@@ -29,8 +29,8 @@ n_points = 0
 length = 0
 
 # Getting our AI, which we call "brain", and that contains our neural network that represents our Q-function
-brain = Dqn(5,3,0.9)
-action2rotation = [0,20,-20]
+brain = Dqn(5, 3, 0.9)
+action2rotation = [0, 20, -20]
 last_reward = 0
 scores = []
 
@@ -199,7 +199,7 @@ class MyPaintWidget(Widget):
         with self.canvas:
             Color(0.8, 0.7, 0)
             d = 10.
-            touch.ud['line'] = Line(points=(touch.x, touch.y), width = 10)
+            touch.ud['line'] = Line(points=(touch.x, touch.y), width=10)
             last_x = int(touch.x)
             last_y = int(touch.y)
             n_points = 0
