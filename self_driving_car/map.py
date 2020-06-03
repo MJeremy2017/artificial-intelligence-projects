@@ -197,9 +197,9 @@ class MyPaintWidget(Widget):
     def on_touch_down(self, touch):
         global length, n_points, last_x, last_y
         with self.canvas:
-            Color(0.8,0.7,0)
+            Color(0.8, 0.7, 0)
             d = 10.
-            touch.ud['line'] = Line(points = (touch.x, touch.y), width = 10)
+            touch.ud['line'] = Line(points=(touch.x, touch.y), width = 10)
             last_x = int(touch.x)
             last_y = int(touch.y)
             n_points = 0
@@ -230,12 +230,12 @@ class CarApp(App):
         parent.serve_car()
         Clock.schedule_interval(parent.update, 1.0/60.0)
         self.painter = MyPaintWidget()
-        clearbtn = Button(text = 'clear')
-        savebtn = Button(text = 'save', pos = (parent.width, 0))
-        loadbtn = Button(text = 'load', pos = (2 * parent.width, 0))
-        clearbtn.bind(on_release = self.clear_canvas)
-        savebtn.bind(on_release = self.save)
-        loadbtn.bind(on_release = self.load)
+        clearbtn = Button(text='clear')
+        savebtn = Button(text='save', pos=(parent.width, 0))
+        loadbtn = Button(text='load', pos=(2 * parent.width, 0))
+        clearbtn.bind(on_release=self.clear_canvas)
+        savebtn.bind(on_release=self.save)
+        loadbtn.bind(on_release=self.load)
         parent.add_widget(self.painter)
         parent.add_widget(clearbtn)
         parent.add_widget(savebtn)
@@ -245,7 +245,7 @@ class CarApp(App):
     def clear_canvas(self, obj):
         global sand
         self.painter.canvas.clear()
-        sand = np.zeros((longueur,largeur))
+        sand = np.zeros((longueur, largeur))
 
     def save(self, obj):
         print("saving brain...")

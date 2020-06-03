@@ -167,6 +167,7 @@ class Game(Widget):
 
 # Painting for graphic interface (see kivy tutorials: https://kivy.org/docs/tutorials/firstwidget.html)
 
+
 class MyPaintWidget(Widget):
 
     def on_touch_down(self, touch): # putting some sand when we do a left click
@@ -203,11 +204,12 @@ class CarApp(App):
     def build(self): # building the app
         parent = Game()
         parent.serve_car()
+        # moving the car constantly
         Clock.schedule_interval(parent.update, 1.0 / 60.0)
         self.painter = MyPaintWidget()
         clearbtn = Button(text='clear')
-        savebtn = Button(text='save',pos=(parent.width,0))
-        loadbtn = Button(text='load',pos=(2*parent.width,0))
+        savebtn = Button(text='save', pos=(parent.width, 0))
+        loadbtn = Button(text='load', pos=(2*parent.width, 0))
         clearbtn.bind(on_release=self.clear_canvas)
         savebtn.bind(on_release=self.save)
         loadbtn.bind(on_release=self.load)
@@ -231,6 +233,7 @@ class CarApp(App):
     def load(self, obj): # load button
         print("loading last saved brain...")
         brain.load()
+
 
 # Running the app
 if __name__ == '__main__':
