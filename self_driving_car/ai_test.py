@@ -15,13 +15,15 @@ class Network(nn.Module):
         self.nb_action = nb_action
         # one fully connected hidden layer with 30 neurons
         self.fc1 = nn.Linear(input_size, 30)
-        self.fc2 = nn.Linear(30, nb_action)
+        self.fc2 = nn.Linear(30, 50)
+        self.fc3 = nn.Linear(50, nb_action)
 
     def forward(self, state):
         # returns are Q(state, action) values
         # input_state -> fc1 -> relu -> fc2 -> output_action
         x = F.relu(self.fc1(state))
-        q_values = self.fc2(x)
+        x = F.relu(self.fc2(x))
+        q_values = self.fc3(x)
         return q_values
 
 
