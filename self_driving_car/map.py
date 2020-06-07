@@ -145,6 +145,7 @@ class Game(Widget):
         yy = goal_y - self.car.y
         orientation = Vector(*self.car.velocity).angle((xx, yy))/180.
         # state
+        # example: [0.0, 0.0, 1.0, -0.000641, 0.000641] | repeated
         last_signal = [self.car.signal1, self.car.signal2, self.car.signal3, orientation, -orientation]
         action = brain.update(last_reward, last_signal)
         scores.append(brain.score())
@@ -165,7 +166,7 @@ class Game(Widget):
             # otherwise
             self.car.velocity = Vector(6, 0).rotate(self.car.angle)
             if distance < last_distance:
-                last_reward = 0.1
+                last_reward = 0.1  # * 2000/distance
             else:
                 last_reward = -0.2
 
@@ -187,6 +188,8 @@ class Game(Widget):
         if distance < 100:
             goal_x = self.width-goal_x
             goal_y = self.height-goal_y
+            # add extra reward when reaching goal
+            last_reward = 2
         last_distance = distance
 
 
