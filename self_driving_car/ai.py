@@ -50,7 +50,7 @@ class ReplayMemory(object):
 # Implementing Deep Q Learning
 
 
-class Dqn():
+class Dqn:
     
     def __init__(self, input_size, nb_action, gamma):
         self.gamma = gamma
