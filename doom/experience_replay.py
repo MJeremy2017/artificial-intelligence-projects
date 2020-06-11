@@ -58,7 +58,7 @@ class ReplayMemory:
 
     def sample_batch(self, batch_size):  # creates an iterator that returns random batches
         ofs = 0
-        vals = list(self.buffer)
+        vals = list(self.buffer)  # [[10 steps], [10 steps], ..., [10 steps]]
         np.random.shuffle(vals)
         while (ofs+1)*batch_size <= len(self.buffer):
             yield vals[ofs*batch_size:(ofs+1)*batch_size]
