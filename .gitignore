@@ -3,3 +3,4 @@ tmp
 .idea
 */**/__pycache__
 */**/*.pth
+*/**/.DS_Store
