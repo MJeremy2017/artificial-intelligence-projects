@@ -10,6 +10,37 @@ def normalized_columns_initializer(weights, std=1.0):
     return out
 
 
+# Initializing the weights of the neural network in an optimal way for the learning
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        weight_shape = list(m.weight.data.size())  # list containing the shape of the weights in the object "m"
+        fan_in = np.prod(weight_shape[1:4])  # dim1 * dim2 * dim3
+        fan_out = np.prod(weight_shape[2:4]) * weight_shape[0]  # dim0 * dim2 * dim3
+        w_bound = np.sqrt(6. / (fan_in + fan_out))  # weight bound
+        # generating some random weights of order inversely proportional to the size of the tensor of weights
+        m.weight.data.uniform_(-w_bound, w_bound)
+        # initializing all the bias with zeros
+        m.bias.data.fill_(0)
+    elif classname.find('Linear') != -1:
+        weight_shape = list(m.weight.data.size())
+        fan_in = weight_shape[1]  # dim1
+        fan_out = weight_shape[0]  # dim0
+        w_bound = np.sqrt(6. / (fan_in + fan_out))
+        m.weight.data.uniform_(-w_bound, w_bound)
+        m.bias.data.fill_(0)
+
+
+class ActorCritic(nn.Module):
+    def __init__(self, num_inputs, num_actions):
+        super(ActorCritic, self).__init__()
+        self.conv1 = nn.Conv2d(num_inputs, 32, 3, stride=2, padding=1)
+        self.conv2 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
+        self.conv3 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
+        self.conv4 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
+        # input size is 1 image
+        self.lstm = nn.LSTMCell(32*3*3, 256)  # 32x3x3 is the size after convolution layer
+
 
 
 
