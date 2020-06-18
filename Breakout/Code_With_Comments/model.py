@@ -32,7 +32,8 @@ def weights_init(m):
 
 
 class ActorCritic(nn.Module):
-    def __init__(self, num_inputs, num_actions):
+
+    def __init__(self, num_inputs, action_space):
         super(ActorCritic, self).__init__()
         self.conv1 = nn.Conv2d(num_inputs, 32, 3, stride=2, padding=1)
         self.conv2 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
@@ -40,6 +41,33 @@ class ActorCritic(nn.Module):
         self.conv4 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
         # input size is 1 image
         self.lstm = nn.LSTMCell(32*3*3, 256)  # 32x3x3 is the size after convolution layer
+        num_outputs = action_space.n
+        self.linear_critic = nn.Linear(256, 1)  # V(s)
+        self.linear_actor = nn.Linear(256, num_outputs)  # Q(s,a)
+        # init weights
+        self.apply(weights_init)
+
+        self.linear_critic.weight.data = normalized_columns_initializer(self.linear_critic.weight.data, 1.)
+        self.linear_critic.bias.fill_(0)
+
+        self.linear_actor.weight.data = normalized_columns_initializer(self.linear_actor.weight.data, .01)
+        self.linear_actor.bias.fill_(0)
+        # fill lstm bias
+        self.lstm.bias_hh.fill_(0)
+        self.lstm.bias_ih.fill_(0)
+        # training mode
+        self.train()
+
+    def forward(self, inputs):
+        inputs, (hx, cx) = inputs
+        x = F.elu(self.conv1(inputs))
+        x = F.elu(self.conv2(inputs))
+        x = F.elu(self.conv3(inputs))
+        x = F.elu(self.conv4(inputs))
+        x = x.view(-1, 32*3*3)
+        (hx, cx) = self.lstm(x, (hx, cx))
+        x = hx
+        return self.linear_critic(x), self.linear_actor(x), (hx, cx)
 
 
 
