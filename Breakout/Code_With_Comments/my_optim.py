@@ -6,6 +6,7 @@ import torch.optim as optim
 
 # Implementing the Adam optimizer with shared states
 
+
 class SharedAdam(optim.Adam): # object that inherits from optim.Adam
 
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0):

@@ -39,6 +39,7 @@ def train(rank, params, shared_model, optimizer):
         else:
             hx = Variable(hx.data)
             cx = Variable(cx.data)
+
         for step in range(params.num_steps):
             value, action_values, (hx, cx) = model((Variable(state.unsqueeze(0)), (hx, cx)))
             prob = F.softmax(action_values)
@@ -51,7 +52,7 @@ def train(rank, params, shared_model, optimizer):
             values.append(value)
             entropies.append(entropy)
             log_probs.append(log_prob)
-
+            # get into next state
             state, reward, done = env.step(action.numpy())
             done = (done or episode_length >= params.max_episode_length)
             reward = max(min(reward, -1), 1)
@@ -61,8 +62,30 @@ def train(rank, params, shared_model, optimizer):
             rewards.append(reward)
             if done:
                 break
-
-
+        # calculate loss and back propagate
+        R = torch.zeros(1, 1)
+        if not done:
+            value, _, _ = model((Variable(state.unsqueeze(0)), (hx, cx)))
+            R = value.data
+        values.append(Variable(R))
+        policy_loss = 0
+        value_loss = 0
+        R = Variable(R)
+        # generalized advantage estimation
+        gae = torch.zeros(1, 1)  # A(s, a) = Q(s, a) - V(s)
+        for i in reversed(range(len(rewards))):
+            # R = r_0 + gamma * r_1 + gamma^2 * r_2 ... + gamma^(n-1)*r_(n-1) +mgamma^nb_step * V(last_state)
+            R = params.gamma * R + rewards[i]
+            advantage = R - values[i]
+            value_loss += 0.5 * advantage.pow(2)
+            TD = rewards[i] + params.gamma * values[i+1].data - values[i].data
+            gae = gae * params.gamma * params.tau + TD
+            policy_loss = policy_loss - log_probs[i] * Variable(gae) - 0.01 * entropies[i]
+        optimizer.zero_grad()
+        (policy_loss + 0.5 * value_loss).backward()
+        torch.nn.utils.clip_grad_norm(model.parameters(), 40)
+        ensure_shared_grads(model, shared_model)
+        optimizer.step()
 
 
 # def train(rank, params, shared_model, optimizer):
@@ -117,7 +140,7 @@ def train(rank, params, shared_model, optimizer):
 #         R = Variable(R) # making sure the cumulative reward R is a torch Variable
 #         gae = torch.zeros(1, 1) # initializing the Generalized Advantage Estimation to 0
 #         for i in reversed(range(len(rewards))): # starting from the last exploration step and going back in time
-#             R = params.gamma * R + rewards[i] # R = gamma*R + r_t = r_0 + gamma r_1 + gamma^2 * r_2 ... + gamma^(n-1)*r_(n-1) + gamma^nb_step * V(last_state)
+#             R = params.gamma * R + rewards[i] # R = r_0 + gamma * r_1 + gamma^2 * r_2 ... + gamma^(n-1)*r_(n-1) +mgamma^nb_step * V(last_state)
 #             advantage = R - values[i] # R is an estimator of Q at time t = i so advantage_i = Q_i - V(state_i) = R - value[i]
 #             value_loss = value_loss + 0.5 * advantage.pow(2) # computing the value loss
 #             TD = rewards[i] + params.gamma * values[i + 1].data - values[i].data # computing the temporal difference
