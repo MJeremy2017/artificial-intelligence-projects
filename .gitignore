@@ -4,3 +4,5 @@ tmp
 */**/__pycache__
 */**/*.pth
 */**/.DS_Store
+Breakout/Code_With_Comments/test
+Breakout/Code_No_Comment/test
